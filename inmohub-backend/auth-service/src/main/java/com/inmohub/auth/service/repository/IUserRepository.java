@@ -14,5 +14,5 @@ public interface IUserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
     Optional<User> findByEmail(String email);
-    List<User> findByRole(UserRole role);
+    List<User> findByRole_Name(String role); // La query resultante implementa un INNER JOIN
 }

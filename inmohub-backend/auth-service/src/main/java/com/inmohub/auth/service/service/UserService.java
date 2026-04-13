@@ -120,9 +120,9 @@ public class UserService {
      * @throws IllegalArgumentException si el rol no existe en el Enum.
      */
     public List<UserDto> getByRole(String userRole) {
-        UserRole role = UserRole.valueOf(userRole); // Convierte String a Enum
+        String role = userRole; // Convierte String a Enum
 
-        return repository.findByRole(role)
+        return repository.findByRole_Name(role)
                 .stream()
                 .map(mapper::toDTO)
                 .toList();
