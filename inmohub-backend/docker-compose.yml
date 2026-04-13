@@ -1,0 +1,157 @@
+services:
+  auth-db:
+    image: mysql:8.0
+    container_name: auth-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - auth_mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - playground-net
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  property-db:
+    image: postgres:15-alpine
+    container_name: property-db
+    restart: always
+    environment:
+      POSTGRES_DB: property_db
+      POSTGRES_USER: property_user
+      POSTGRES_PASSWORD: property_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - property_pg_data:/var/lib/postgresql/data
+    networks:
+      - playground-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U property_user -d property_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  service-registry:
+    build:
+      context: .
+      dockerfile: service-registry/Dockerfile
+    container_name: service-registry
+    profiles: ["dev"]
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_APPLICATION_JSON={"eureka":{"client":{"registerWithEureka":false,"fetchRegistry":false},"instance":{"hostname":"service-registry"}}}
+    networks:
+      - playground-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  config-service:
+    build:
+      context: .
+      dockerfile: config-service/Dockerfile
+    container_name: config-service
+    profiles: ["dev"]
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://service-registry:8761/eureka/"}}}}
+      - SPRING_PROFILES_ACTIVE=native
+    networks:
+      - playground-net
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: auth-service
+    profiles: ["dev"]
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://service-registry:8761/eureka/"}}}}
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:8888/
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+    networks:
+      - playground-net
+
+  property-service:
+    build:
+      context: .
+      dockerfile: property-service/Dockerfile
+    container_name: property-service
+    profiles: ["dev"]
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://service-registry:8761/eureka/"}}}}
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:8888/
+    depends_on:
+      property-db:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+    networks:
+      - playground-net
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    profiles: ["dev"]
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://service-registry:8761/eureka/"}}}}
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:8888/
+    depends_on:
+      service-registry:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      property-service:
+        condition: service_started
+    networks:
+      - playground-net
+
+networks:
+  playground-net:
+    driver: bridge
+
+volumes:
+  auth_mysql_data:
+  property_pg_data:

@@ -1,0 +1,56 @@
+# Configuración por defecto (Entorno Local/IDE)
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false # Se desactivan las rutas automáticas para tener control manual y preciso
+              lower-case-service-id: false
+
+          # Definición de las Rutas
+          routes:
+            # --- AUTH-SERVICE
+            - id: auth-service
+              # "lb://" indica Load Balanced. El Gateway pregunta a Eureka qué IPs tienen el servicio
+              # "AUTH-SERVICE" y balancea la carga entre ellas si hubiera más de una instancia.
+              uri: lb://AUTH-SERVICE
+              predicates:
+                # Cualquier petición que empiece por /api/v1/users/ se envía a este microservicio
+                - Path=/api/v1/users/**
+
+            # --- PROPERTY-SERVICE
+            - id: property-service
+              uri: lb://PROPERTY-SERVICE
+              predicates:
+                - Path=/api/v1/properties/**
+
+eureka:
+  instance:
+    # En entorno local, es preferible la IP para evitar conflictos de resolución de nombres de host
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    # Frecuencia con la que el Gateway refresca la lista de servicios disponibles
+    # (5 segundos para rapidez en el desarrollo)
+    registry-fetch-interval-seconds: 5
+
+# Configuración específica para Docker
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+eureka:
+  client:
+    service-url:
+      # URL interna del service-registry dentro de la red Docker
+      defaultZone: http://service-registry:8761/eureka/

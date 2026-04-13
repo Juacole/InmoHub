@@ -1,0 +1,130 @@
+package com.inmohub.auth.service.service;
+
+import com.inmohub.auth.service.dto.UserCreateDTO;
+import com.inmohub.auth.service.dto.UserDTO;
+import com.inmohub.auth.service.exception.ResourceNotFoundException;
+import com.inmohub.auth.service.mapper.UserMapper;
+import com.inmohub.auth.service.model.User;
+import com.inmohub.auth.service.model.enums.UserRole;
+import com.inmohub.auth.service.repository.UserRepository;
+import com.inmohub.auth.service.service.util.PasswordUtil;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Servicio de lógica de negocio para la gestión de usuarios.
+ * Encargado de la orquestación entre el controlador, el repositorio y las utilidades.
+ */
+@Service
+@AllArgsConstructor
+public class UserService {
+    private final UserRepository repository;
+    private final UserMapper mapper;
+
+    /**
+     * Crea y persiste un nuevo usuario en la base de datos.
+     * Realiza el hashing de la contraseña antes de guardar.
+     *
+     * @param createDTO Datos de entrada validados.
+     * @return UserDTO Datos del usuario ya persistido.
+     */
+    public UserDTO createUser(UserCreateDTO createDTO) {
+        User user = mapper.toEntity(createDTO);
+
+        user.setPassword(PasswordUtil.hashPassword(createDTO.password()));
+        return mapper.toDTO(repository.save(user));
+    }
+
+    /**
+     * Recupera todos los usuarios del sistema.
+     * @return Lista de usuarios convertidos a DTO.
+     */
+    public List<UserDTO> getAllUsers() {
+        return repository.findAll().stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+
+    /**
+     * Busca un usuario por su identificador único (UUID).
+     *
+     * @param uuid ID del usuario.
+     * @return UserDTO si se encuentra.
+     * @throws ResourceNotFoundException si el usuario no existe.
+     */
+    public UserDTO getById(UUID uuid) {
+        return repository.findById(uuid)
+                .map(mapper::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado."));
+    }
+
+    /**
+     * Verifica si un email ya existe en la base de datos.
+     * @param email Email a comprobar.
+     * @return true si existe, false en caso contrario.
+     */
+    public boolean existsByEmail(String email) {
+        return repository.existsByEmail(email);
+    }
+
+    /**
+     * Verifica si un nombre de usuario ya existe.
+     * @param username Nombre de usuario a comprobar.
+     * @return true si existe, false en caso contrario.
+     */
+    public boolean existsByUsername(String username) {
+        return repository.existsByUsername(username);
+    }
+
+    /**
+     * Elimina un usuario por su ID.
+     *
+     * @param id UUID del usuario a eliminar.
+     * @return true si se eliminó, false si no existía.
+     */
+    public boolean deleteById(UUID id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Realiza el proceso de login verificando email y contraseña.
+     *
+     * @param email Email del usuario.
+     * @param password Contraseña en texto plano introducida por el usuario.
+     * @return UserDTO si las credenciales son correctas.
+     * @throws RuntimeException si el usuario no existe o la contraseña no coincide.
+     */
+    public UserDTO login(String email, String password) {
+        User user = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!PasswordUtil.checkPassword(password, user.getPassword())) {
+            throw new RuntimeException("Credenciales incorrectas");
+        }
+
+        return mapper.toDTO(user);
+    }
+
+    /**
+     * Filtra usuarios por su rol en el sistema.
+     *
+     * @param userRole String con el nombre del rol (ej: "AGENT").
+     * @return Lista de usuarios que tienen ese rol.
+     * @throws IllegalArgumentException si el rol no existe en el Enum.
+     */
+    public List<UserDTO> getByRole(String userRole) {
+        UserRole role = UserRole.valueOf(userRole); // Convierte String a Enum
+
+        return repository.findByRole(role)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+}

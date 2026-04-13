@@ -1,0 +1,14 @@
+server:
+  port: 8888 # Puerto estándar para Spring Cloud Config Server
+
+spring:
+  application:
+    name: config-service
+  profiles:
+    # Activamos el perfil native para cargar la configuración desde el sistema de archivos local (classpath)
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config/ # Ruta donde se almacenaran las configuraciones de los demas microservicios

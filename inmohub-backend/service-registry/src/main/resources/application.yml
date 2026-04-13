@@ -1,0 +1,14 @@
+server: # Configuración del servidor
+  port: 8761 # Puerto estándar por defecto de Eureka
+
+spring:
+  application:
+    name: discovery-service # Identificador de la aplicación en la red de Spring Cloud
+
+eureka:
+  client:
+    register-with-eureka: false # Evitamos que el servidor se registre a si mismo
+    fetch-registry: false # Evitamos que el servidor descargue el registro de servicios
+  server:
+    wait-time-in-ms-when-sync-empty: 0 # Durante el desarrollo es útil ponerlo a 0 para que arranque rápido y no espere a que se conecten pares.
+
