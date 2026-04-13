@@ -1,7 +1,7 @@
 package com.inmohub.auth.service;
 
-import com.inmohub.auth.service.dto.UserCreateDTO;
-import com.inmohub.auth.service.dto.UserDTO;
+import com.inmohub.auth.service.dto.UserCreateDto;
+import com.inmohub.auth.service.dto.UserDto;
 import com.inmohub.auth.service.exception.ResourceNotFoundException;
 import com.inmohub.auth.service.mapper.UserMapper;
 import com.inmohub.auth.service.model.User;
@@ -39,7 +39,7 @@ class UserServiceTest {
     private UserService userService;
 
     private User mockUser;
-    private UserDTO mockUserDTO;
+    private UserDto mockUserDTO;
 
     private final String RAW_PASSWORD = "Password123";
     private final String HASHED_PASSWORD = PasswordUtil.hashPassword(RAW_PASSWORD);
@@ -55,7 +55,7 @@ class UserServiceTest {
         mockUser.setRole(UserRole.AGENT);
         mockUser.setStatus(UserStatus.ACTIVE);
 
-        mockUserDTO = new UserDTO(
+        mockUserDTO = new UserDto(
                 userId, "pepemontana", "pepe.montana@gmail.com", "Pepe", "Montana",
                 "600123456", "AGENT", UserStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now()
         );
@@ -67,7 +67,7 @@ class UserServiceTest {
         when(userRepository.findByEmail("pepe.montana@gmail.com")).thenReturn(Optional.of(mockUser));
         when(userMapper.toDTO(mockUser)).thenReturn(mockUserDTO);
 
-        UserDTO result = userService.login("pepe.montana@gmail.com", RAW_PASSWORD);
+        UserDto result = userService.login("pepe.montana@gmail.com", RAW_PASSWORD);
 
         assertNotNull(result);
         assertEquals("pepe.montana@gmail.com", result.email());
@@ -107,7 +107,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Crear usuario encripta correctamente la contraseña")
     void createUser_Success() {
-        UserCreateDTO createDTO = new UserCreateDTO(
+        UserCreateDto createDTO = new UserCreateDto(
                 "pepemontana", RAW_PASSWORD, "pepe.montana@gmail.com", "Pepe", "Montana", "600123456", "AGENT"
         );
 
@@ -115,7 +115,7 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(mockUser);
         when(userMapper.toDTO(mockUser)).thenReturn(mockUserDTO);
 
-        UserDTO result = userService.createUser(createDTO);
+        UserDto result = userService.createUser(createDTO);
 
         assertNotNull(result);
         verify(userMapper, times(1)).toEntity(createDTO);

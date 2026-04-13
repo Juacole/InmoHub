@@ -1,8 +1,8 @@
 package com.inmohub.auth.service.controller;
 
-import com.inmohub.auth.service.dto.LoginDTO;
-import com.inmohub.auth.service.dto.UserCreateDTO;
-import com.inmohub.auth.service.dto.UserDTO;
+import com.inmohub.auth.service.dto.LoginDto;
+import com.inmohub.auth.service.dto.UserCreateDto;
+import com.inmohub.auth.service.dto.UserDto;
 import com.inmohub.auth.service.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,31 +33,31 @@ public class UserController {
     @Operation(summary = "Registrar nuevo usuario", description = "Crea un usuario con rol específico (ADMIN, AGENT, CLIENT, OWNER).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuario creado exitosamente",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos", content = @Content),
             @ApiResponse(responseCode = "409", description = "Conflicto: El email o username ya existen", content = @Content)
     })
     @PostMapping("/create")
-    public ResponseEntity<UserDTO> create(@Valid @RequestBody UserCreateDTO createDTO) {
+    public ResponseEntity<UserDto> create(@Valid @RequestBody UserCreateDto createDTO) {
         return ResponseEntity.ok(service.createUser(createDTO));
     }
 
     @Operation(summary = "Listar todos los usuarios", description = "Devuelve un listado completo de los usuarios registrados.")
     @ApiResponse(responseCode = "200", description = "Operación exitosa")
     @GetMapping("/all")
-    public ResponseEntity<List<UserDTO>> getAll() {
+    public ResponseEntity<List<UserDto>> getAll() {
         return ResponseEntity.ok(service.getAllUsers());
     }
 
     @Operation(summary = "Obtener usuario por ID", description = "Busca un usuario específico por su UUID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuario encontrado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
     })
     @GetMapping("/search-by-id/{id}")
-    public ResponseEntity<UserDTO> getById(@PathVariable(name = "id") UUID id) {
-        UserDTO user = service.getById(id);
+    public ResponseEntity<UserDto> getById(@PathVariable(name = "id") UUID id) {
+        UserDto user = service.getById(id);
 
         if(user != null) return ResponseEntity.ok(user);
 
@@ -120,19 +120,19 @@ public class UserController {
     @Operation(summary = "Iniciar Sesión", description = "Verifica credenciales (email y password) y devuelve los datos del usuario.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login correcto",
-                    content = @Content(schema = @Schema(implementation = UserDTO.class))),
+                    content = @Content(schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "500", description = "Credenciales incorrectas o error interno", content = @Content)
     })
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDTO) {
         return ResponseEntity.ok(service.login(loginDTO.email(), loginDTO.password()));
     }
 
     @Operation(summary = "Listar usuarios por Rol", description = "Filtra y devuelve usuarios que tengan un rol específico (ADMIN, AGENT, OWNER, CLIENT).")
     @ApiResponse(responseCode = "200", description = "Listado obtenido (puede estar vacío)")
     @GetMapping("/role/{userRole}")
-    public ResponseEntity<List<UserDTO>> getByRole(@PathVariable String userRole) {
-        List<UserDTO> users = service.getByRole(userRole);
+    public ResponseEntity<List<UserDto>> getByRole(@PathVariable String userRole) {
+        List<UserDto> users = service.getByRole(userRole);
 
         return ResponseEntity.ok(users);
     }

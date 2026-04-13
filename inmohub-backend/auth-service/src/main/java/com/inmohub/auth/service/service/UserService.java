@@ -1,7 +1,7 @@
 package com.inmohub.auth.service.service;
 
-import com.inmohub.auth.service.dto.UserCreateDTO;
-import com.inmohub.auth.service.dto.UserDTO;
+import com.inmohub.auth.service.dto.UserCreateDto;
+import com.inmohub.auth.service.dto.UserDto;
 import com.inmohub.auth.service.exception.ResourceNotFoundException;
 import com.inmohub.auth.service.mapper.UserMapper;
 import com.inmohub.auth.service.model.User;
@@ -31,7 +31,7 @@ public class UserService {
      * @param createDTO Datos de entrada validados.
      * @return UserDTO Datos del usuario ya persistido.
      */
-    public UserDTO createUser(UserCreateDTO createDTO) {
+    public UserDto createUser(UserCreateDto createDTO) {
         User user = mapper.toEntity(createDTO);
 
         user.setPassword(PasswordUtil.hashPassword(createDTO.password()));
@@ -42,7 +42,7 @@ public class UserService {
      * Recupera todos los usuarios del sistema.
      * @return Lista de usuarios convertidos a DTO.
      */
-    public List<UserDTO> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return repository.findAll().stream()
                 .map(mapper::toDTO)
                 .toList();
@@ -55,7 +55,7 @@ public class UserService {
      * @return UserDTO si se encuentra.
      * @throws ResourceNotFoundException si el usuario no existe.
      */
-    public UserDTO getById(UUID uuid) {
+    public UserDto getById(UUID uuid) {
         return repository.findById(uuid)
                 .map(mapper::toDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado."));
@@ -101,7 +101,7 @@ public class UserService {
      * @return UserDTO si las credenciales son correctas.
      * @throws RuntimeException si el usuario no existe o la contraseña no coincide.
      */
-    public UserDTO login(String email, String password) {
+    public UserDto login(String email, String password) {
         User user = repository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -119,7 +119,7 @@ public class UserService {
      * @return Lista de usuarios que tienen ese rol.
      * @throws IllegalArgumentException si el rol no existe en el Enum.
      */
-    public List<UserDTO> getByRole(String userRole) {
+    public List<UserDto> getByRole(String userRole) {
         UserRole role = UserRole.valueOf(userRole); // Convierte String a Enum
 
         return repository.findByRole(role)

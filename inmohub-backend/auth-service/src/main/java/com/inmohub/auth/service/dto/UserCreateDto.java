@@ -5,10 +5,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
+import java.util.Set;
+
 /**
  * DTO para la creación de un nuevo usuario.
  */
-public record UserCreateDTO(
+public record UserCreateDto(
         @Schema(description = "Nombre de usuario único", example = "pepemontana")
         @NotBlank(message = "El username es obligatorio")
         String username,
@@ -34,7 +36,8 @@ public record UserCreateDTO(
         @Pattern(regexp = "^[67]\\d{8}$", message = "Formato de teléfono inválido")
         String phone,
 
-        @Schema(description = "Rol del usuario en la plataforma", example = "AGENT")
-        String role
+        Set<String> roles
+//        @Schema(description = "Rol del usuario en la plataforma", example = "AGENT")
+//        String role
 ) {
 }

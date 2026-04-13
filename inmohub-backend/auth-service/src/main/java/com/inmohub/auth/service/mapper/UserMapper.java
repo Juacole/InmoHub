@@ -1,7 +1,7 @@
 package com.inmohub.auth.service.mapper;
 
-import com.inmohub.auth.service.dto.UserCreateDTO;
-import com.inmohub.auth.service.dto.UserDTO;
+import com.inmohub.auth.service.dto.UserCreateDto;
+import com.inmohub.auth.service.dto.UserDto;
 import com.inmohub.auth.service.model.User;
 import com.inmohub.auth.service.model.enums.UserStatus;
 import org.mapstruct.Mapper;
@@ -24,7 +24,7 @@ public interface UserMapper {
      * @param user Entidad de usuario.
      * @return DTO con datos públicos.
      */
-    UserDTO toDTO(User user);
+    UserDto toDTO(User user);
 
     /**
      * Convierte el DTO de creación a una entidad User lista para persistir.
@@ -42,5 +42,5 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "status", constant = "ACTIVE") // Asignamos status por defecto
-    User toEntity(UserCreateDTO userCreateDTO);
+    User toEntity(UserCreateDto userCreateDTO);
 }

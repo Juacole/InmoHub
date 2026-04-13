@@ -3,7 +3,7 @@ package com.inmohub.auth.service.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Objeto de transferencia para las credenciales de inicio de sesión")
-public record LoginDTO(
+public record LoginDto(
         @Schema(description = "Email del usuario", example = "pepe.montana@gmail.com")
         String email,
 
