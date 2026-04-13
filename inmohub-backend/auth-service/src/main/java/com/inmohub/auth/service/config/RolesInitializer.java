@@ -1,0 +1,34 @@
+package com.inmohub.auth.service.config;
+
+import com.inmohub.auth.service.model.Role;
+import com.inmohub.auth.service.repository.IRoleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+@Configuration
+@RequiredArgsConstructor
+public class RolesInitializer {
+    private final IRoleRepository roleRepository;
+
+    @Bean
+    public CommandLineRunner initRoles() {
+        return args -> {
+            List<String> defaultRoles = List.of("ADMIN", "AGENT", "OWNER", "CLIENT");
+
+            for (String roleName : defaultRoles) {
+                if (roleRepository.findByName(roleName).isEmpty()) {
+                    Role role = new Role();
+                    role.setName(roleName);
+                    role.setDescription("Rol base del sistema: " + roleName);
+                    roleRepository.save(role);
+
+                    System.out.println("Rol inicializado en BD: " + roleName);
+                }
+            }
+        };
+    }
+}
