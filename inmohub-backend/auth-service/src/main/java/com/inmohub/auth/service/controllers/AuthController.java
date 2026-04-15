@@ -118,10 +118,10 @@ public class AuthController {
         }
     }
 
-    @Operation(summary = "Iniciar Sesión", description = "Verifica credenciales (email y password) y devuelve los datos del usuario.")
+    @Operation(summary = "Iniciar Sesión", description = "Verifica credenciales (email y password) y devuelve el token generado.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login correcto",
-                    content = @Content(schema = @Schema(implementation = UserDto.class))),
+                    content = @Content(schema = @Schema(implementation = Map.class))),
             @ApiResponse(responseCode = "500", description = "Credenciales incorrectas o error interno", content = @Content)
     })
     @PostMapping("/login")
