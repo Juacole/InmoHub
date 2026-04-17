@@ -1,8 +1,6 @@
 package com.inmohub.auth.service.controllers;
 
-import com.inmohub.auth.service.dtos.LoginDto;
-import com.inmohub.auth.service.dtos.UserCreateDto;
-import com.inmohub.auth.service.dtos.UserDto;
+import com.inmohub.auth.service.dtos.*;
 import com.inmohub.auth.service.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -127,6 +125,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginDto loginDto) {
         return ResponseEntity.ok(Map.of("token", service.login(loginDto.email(), loginDto.password())));
+    }
+
+    @Operation(summary = "Refrescar Token de Acceso", description = "Genera un nuevo JWT usando un Refresh Token válido.")
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponseDto> refreshToken(@Valid @RequestBody RefreshTokenRequestsDto requestDto) {
+        return ResponseEntity.ok(service.refreshToken(requestDto.refreshToken()));
     }
 
     @Operation(summary = "Listar usuarios por Rol", description = "Filtra y devuelve usuarios que tengan un rol específico (ADMIN, AGENT, OWNER, CLIENT).")
