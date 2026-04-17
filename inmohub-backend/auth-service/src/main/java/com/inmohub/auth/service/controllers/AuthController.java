@@ -38,9 +38,9 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos", content = @Content),
             @ApiResponse(responseCode = "409", description = "Conflicto: El email o username ya existen", content = @Content)
     })
-    @PostMapping("/create")
-    public ResponseEntity<UserDto> create(@Valid @RequestBody UserCreateDto createDTO) {
-        return ResponseEntity.ok(service.createUser(createDTO));
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> create(@Valid @RequestBody UserCreateDto createDto) {
+        return ResponseEntity.ok(service.createUser(createDto));
     }
 
     @Operation(summary = "Listar todos los usuarios", description = "Devuelve un listado completo de los usuarios registrados.")
@@ -125,8 +125,8 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "Credenciales incorrectas o error interno", content = @Content)
     })
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginDto loginDTO) {
-        return ResponseEntity.ok(Map.of("token", service.login(loginDTO.email(), loginDTO.password())));
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginDto loginDto) {
+        return ResponseEntity.ok(Map.of("token", service.login(loginDto.email(), loginDto.password())));
     }
 
     @Operation(summary = "Listar usuarios por Rol", description = "Filtra y devuelve usuarios que tengan un rol específico (ADMIN, AGENT, OWNER, CLIENT).")
