@@ -9,13 +9,14 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", imports = PropertyStatus.class)
 public interface IPropertyMapper {
+
     /**
      * Realiza la conversión de entidad "Property" a DTO "PropertyDTO".
      *
      * @param property Entidad JPA.
      * @return objeto DTO PropertyDTO.
      */
-    PropertyDto toDTO(Property property);
+    PropertyDto toDto(Property property);
 
     /**
      * Convierte DTO de creación a Entidad.
@@ -24,6 +25,6 @@ public interface IPropertyMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "status", expression = "java(PropertyStatus.AVAILABLE)") // Por defecto se le asigna disponible
+    @Mapping(target = "status", expression = "java(PropertyStatus.AVAILABLE)") //  Por defecto se le asigna disponible
     Property toEntity(PropertyCreateDto createDTO);
 }

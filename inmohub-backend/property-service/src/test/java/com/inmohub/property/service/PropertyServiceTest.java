@@ -81,7 +81,7 @@ class PropertyServiceTest {
         when(authClient.getUserById(ownerId)).thenReturn(activeUser);
         when(mapper.toEntity(createDTO)).thenReturn(mockEntity);
         when(repository.save(any(Property.class))).thenReturn(mockEntity);
-        when(mapper.toDTO(mockEntity)).thenReturn(mockDTO);
+        when(mapper.toDto(mockEntity)).thenReturn(mockDTO);
 
         PropertyDto result = propertyService.createProperty(createDTO);
 
@@ -115,7 +115,7 @@ class PropertyServiceTest {
         when(authClient.getUserById(ownerId)).thenThrow(notFoundException);
         when(mapper.toEntity(createDTO)).thenReturn(mockEntity);
         when(repository.save(any(Property.class))).thenReturn(mockEntity);
-        when(mapper.toDTO(mockEntity)).thenReturn(mockDTO);
+        when(mapper.toDto(mockEntity)).thenReturn(mockDTO);
 
         PropertyDto result = propertyService.createProperty(createDTO);
 

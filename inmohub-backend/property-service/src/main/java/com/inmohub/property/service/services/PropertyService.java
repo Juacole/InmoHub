@@ -84,7 +84,7 @@ public class PropertyService {
             }
         }
 
-        PropertyDto savedProperty = propertyMapper.toDTO(propertyRepository.save(property));
+        PropertyDto savedProperty = propertyMapper.toDto(propertyRepository.save(property));
         log.info("Propiedad creada con éxito: ID {}", savedProperty.id());
 
         return savedProperty;
@@ -108,7 +108,7 @@ public class PropertyService {
      */
     public List<PropertyDto> getAllProperties() {
             return propertyRepository.findAll().stream()
-                .map(propertyMapper::toDTO)
+                .map(propertyMapper::toDto)
                 .toList();
     }
 
@@ -121,7 +121,7 @@ public class PropertyService {
      */
     public PropertyDto getPropertyById(UUID uuid) {
         return propertyRepository.findById(uuid)
-                .map(propertyMapper::toDTO)
+                .map(propertyMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Propiedad no encontrada."));
     }
 
@@ -133,7 +133,7 @@ public class PropertyService {
      */
     public List<PropertyDto> findByOwnerId(UUID ownerId) {
         return propertyRepository.findByOwnerId(ownerId).stream()
-                .map(propertyMapper::toDTO)
+                .map(propertyMapper::toDto)
                 .toList();
     }
 
