@@ -13,7 +13,7 @@ import com.inmohub.property.service.models.PropertyPhoto;
 import com.inmohub.property.service.models.enums.PropertyStatus;
 import com.inmohub.property.service.repositories.IPropertyRepository;
 import feign.FeignException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -116,6 +116,7 @@ public class PropertyService {
      *
      * @return Una lista de objetos {@link PropertyDto} con la información de todos los inmuebles.
      */
+    @Transactional(readOnly = true)
     public List<PropertyDto> getAllProperties() {
             return propertyRepository.findAll().stream()
                 .map(propertyMapper::toDto)
@@ -129,6 +130,7 @@ public class PropertyService {
      * @return {@link PropertyDto} con los detalles del inmueble encontrado.
      * @throws ResourceNotFoundException Si no existe ninguna propiedad con el ID proporcionado en la base de datos.
      */
+    @Transactional(readOnly = true)
     public PropertyDto getPropertyById(UUID uuid) {
         return propertyRepository.findById(uuid)
                 .map(propertyMapper::toDto)
@@ -141,6 +143,7 @@ public class PropertyService {
      * @param ownerId El UUID del propietario (usuario) del cual se quieren listar los inmuebles.
      * @return Una lista de {@link PropertyDto} pertenecientes a ese propietario. Puede estar vacía si no tiene inmuebles.
      */
+    @Transactional(readOnly = true)
     public List<PropertyDto> findByOwnerId(UUID ownerId) {
         return propertyRepository.findByOwnerId(ownerId).stream()
                 .map(propertyMapper::toDto)

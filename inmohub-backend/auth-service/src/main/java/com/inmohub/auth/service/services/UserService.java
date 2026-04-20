@@ -17,6 +17,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -65,6 +67,7 @@ public class UserService {
      * Recupera todos los usuarios del sistema.
      * @return Lista de usuarios convertidos a DTO.
      */
+    @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
         return repository.findAll().stream()
                 .map(mapper::toDTO)
@@ -78,6 +81,7 @@ public class UserService {
      * @return UserDTO si se encuentra.
      * @throws ResourceNotFoundException si el usuario no existe.
      */
+    @Transactional(readOnly = true)
     public UserDto getById(UUID uuid) {
         return repository.findById(uuid)
                 .map(mapper::toDTO)
@@ -89,6 +93,7 @@ public class UserService {
      * @param email Email a comprobar.
      * @return true si existe, false en caso contrario.
      */
+    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return repository.existsByEmail(email);
     }
@@ -98,6 +103,7 @@ public class UserService {
      * @param username Nombre de usuario a comprobar.
      * @return true si existe, false en caso contrario.
      */
+    @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
         return repository.existsByUsername(username);
     }
@@ -136,6 +142,7 @@ public class UserService {
         return new AuthResponseDto(jwt, refreshToken.getToken());
     }
 
+    @Transactional(readOnly = true)
     public AuthResponseDto refreshToken(String requestRefreshToken) {
         return refreshTokenService.findByToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)
@@ -155,6 +162,7 @@ public class UserService {
      * @return Lista de usuarios que tienen ese rol.
      * @throws IllegalArgumentException si el rol no existe en el Enum.
      */
+    @Transactional(readOnly = true)
     public List<UserDto> getByRole(String userRole) {
         return repository.findByRoles_Name(userRole)
                 .stream()
