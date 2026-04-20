@@ -4,6 +4,7 @@ import com.inmohub.property.service.models.enums.PropertyStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Schema(description = "DTO de respuesta con la información completa de una propiedad")
@@ -15,12 +16,13 @@ public record PropertyDto(
         BigDecimal price,
         Double areaM2,
         String address,
-
+        String city,
         @Schema(description = "Estado actual de la propiedad")
         PropertyStatus status,
-
         @Schema(description = "ID del propietario asociado")
         UUID ownerId,
+        List<PropertyPhotoDto> photos,
+        List<PropertyFeatureDto> features,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
