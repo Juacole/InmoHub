@@ -25,7 +25,7 @@ public class CreateLeadUseCase {
 
         Lead newLead = new Lead(
                 request.name(),
-                request.email(),
+                new Email(request.email()),
                 request.phone(),
                 request.message(),
                 request.source(),
@@ -40,7 +40,7 @@ public class CreateLeadUseCase {
                 new LeadResponse(
                         savedLead.getId(),
                         savedLead.getName(),
-                        savedLead.getEmail(),
+                        savedLead.getEmail().value(),
                         savedLead.getPhone(),
                         savedLead.getStatus(),
                         savedLead.getPropertyId()

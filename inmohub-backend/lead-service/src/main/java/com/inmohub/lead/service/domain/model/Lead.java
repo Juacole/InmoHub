@@ -4,13 +4,14 @@ import com.inmohub.lead.service.domain.abstractions.AuditableEntity;
 import com.inmohub.lead.service.domain.abstractions.DomainException;
 import com.inmohub.lead.service.domain.model.enums.LeadSource;
 import com.inmohub.lead.service.domain.model.enums.LeadStatus;
+import com.inmohub.lead.service.domain.valueobjetcs.Email;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class Lead extends AuditableEntity<UUID> {
     private String name;
-    private String email;
+    private Email email;
     private String phone;
     private String message;
     private LeadSource source;
@@ -18,7 +19,7 @@ public class Lead extends AuditableEntity<UUID> {
     private LeadStatus status;
 
     // Constructor inicial
-    public Lead(String name, String email, String phone, String message, LeadSource source, UUID propertyId) {
+    public Lead(String name, Email email, String phone, String message, LeadSource source, UUID propertyId) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.email = email;
@@ -48,7 +49,7 @@ public class Lead extends AuditableEntity<UUID> {
         return name;
     }
 
-    public String getEmail() {
+    public Email getEmail() {
         return email;
     }
 
