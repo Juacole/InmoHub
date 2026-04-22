@@ -1,5 +1,6 @@
 package com.inmohub.lead.service.infrastructure.adapters.out.persitence.entities;
 
+import com.inmohub.lead.service.domain.model.enums.EventType;
 import jakarta.persistence.*;
 import jdk.jfr.Timestamp;
 import lombok.AllArgsConstructor;
@@ -27,8 +28,9 @@ public class LeadEventJpaEntity {
     @Column(name = "lead_id", nullable = false)
     private UUID leadId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false)
-    private String eventType;
+    private EventType eventType;
 
     @JdbcTypeCode(SqlTypes.JSON) // Mapea el Map a JSON
     private Map<String, Object> metadata;
