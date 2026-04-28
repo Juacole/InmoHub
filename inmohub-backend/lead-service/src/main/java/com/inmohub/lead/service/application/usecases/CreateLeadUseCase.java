@@ -5,17 +5,14 @@ import com.inmohub.lead.service.application.dto.LeadResponse;
 import com.inmohub.lead.service.domain.abstractions.Error;
 import com.inmohub.lead.service.domain.abstractions.Result;
 import com.inmohub.lead.service.domain.model.Lead;
-import com.inmohub.lead.service.domain.ports.ILeadEventPublisher;
 import com.inmohub.lead.service.domain.ports.ILeadRepository;
 import com.inmohub.lead.service.domain.valueobjetcs.Email;
 
 public class CreateLeadUseCase {
     private final ILeadRepository leadRepository;
-    private final ILeadEventPublisher eventPublisher;
 
-    public CreateLeadUseCase(ILeadRepository leadRepository, ILeadEventPublisher eventPublisher) {
+    public CreateLeadUseCase(ILeadRepository leadRepository) {
         this.leadRepository = leadRepository;
-        this.eventPublisher = eventPublisher;
     }
 
     public Result<LeadResponse, Error> execute(CreateLeadRequest request) {
@@ -29,8 +26,6 @@ public class CreateLeadUseCase {
         );
 
         Lead savedLead = leadRepository.saveLead(newLead);
-
-        eventPublisher.publishLeadCreatedEvent(savedLead);
 
         return Result.success(
                 new LeadResponse(
