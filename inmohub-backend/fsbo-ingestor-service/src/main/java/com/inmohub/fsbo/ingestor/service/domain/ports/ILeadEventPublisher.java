@@ -1,7 +1,7 @@
 package com.inmohub.fsbo.ingestor.service.domain.ports;
 
-import com.inmohub.fsbo.ingestor.service.domain.models.FsboRecord;
+import com.inmohub.fsbo.ingestor.service.domain.models.PropertyRecord;
 
 public interface ILeadEventPublisher {
-    void publishLeadCreatedEvent(FsboRecord record);
+    void publishLeadCreatedEvent(PropertyRecord property);
 }

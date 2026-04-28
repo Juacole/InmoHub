@@ -6,34 +6,38 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class FsboBatch {
-    private final UUID id;
+    private final UUID ownerId;
     private final LocalDateTime uploadedAt;
-    private final List<FsboRecord> records;
+    private final List<PropertyRecord> properties;
 
-    private FsboBatch(UUID id, LocalDateTime uploadedAt, List<FsboRecord> records) {
-        this.id = Objects.requireNonNull(id, "El ID del batch es obligatorio.");
+    private FsboBatch(UUID id, LocalDateTime uploadedAt, List<PropertyRecord> properties) {
+        this.ownerId = Objects.requireNonNull(id, "El ID del batch es obligatorio.");
         this.uploadedAt = Objects.requireNonNull(uploadedAt, "La fecha de carga es obligatoria.");
 
-        if (records == null || records.isEmpty()) {
+        if (properties == null || properties.isEmpty()) {
             throw new DomainException("Un lote debe contener al menos un registro.");
         }
-        this.records = new ArrayList<>(records);
+        this.properties = new ArrayList<>(properties);
     }
 
-    public static FsboBatch create(UUID batchId, LocalDateTime uploadedAt, List<FsboRecord> records) {
+    public static FsboBatch create(UUID batchId, LocalDateTime uploadedAt, List<PropertyRecord> records) {
         return new FsboBatch(batchId, uploadedAt, records);
     }
 
-    public List<FsboRecord> getRecords() {
-        return Collections.unmodifiableList(records);
+    public List<PropertyRecord> getValidProperties() {
+        return properties.stream().filter(PropertyRecord::isValid).toList();
+    }
+
+    public List<PropertyRecord> getProperties() {
+        return Collections.unmodifiableList(properties);
     }
 
     public int totalRecords() {
-        return records.size();
+        return properties.size();
     }
 
-    public UUID getId() {
-        return id;
+    public UUID getOwnerId() {
+        return ownerId;
     }
 
     public LocalDateTime getUploadedAt() {

@@ -1,6 +1,6 @@
 package com.inmohub.fsbo.ingestor.service.infrastructure.adapters.out.messaging;
 
-import com.inmohub.fsbo.ingestor.service.domain.models.FsboRecord;
+import com.inmohub.fsbo.ingestor.service.domain.models.PropertyRecord;
 import com.inmohub.fsbo.ingestor.service.domain.ports.ILeadEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,14 +17,14 @@ public class KafkaLeadEventPublisher implements ILeadEventPublisher {
     private static final String TOPIC = "lead.events";
 
     @Override
-    public void publishLeadCreatedEvent(FsboRecord record) {
+    public void publishLeadCreatedEvent(PropertyRecord property) {
         Map<String, Object> payload = new HashMap<>();
-        payload.put("name", record.getOwnerName());
-        payload.put("email", record.getOwnerEmail());
-        payload.put("phone", record.getOwnerPhone());
+        payload.put("name", property.getOwnerName());
+        payload.put("email", property.getOwnerEmail());
+        payload.put("phone", property.getOwnerPhone());
         payload.put("source", "FSBO");
-        payload.put("message", record.getPropertyTitle());
+        payload.put("message", property.getPropertyTitle());
 
-        kafkaTemplate.send(TOPIC, record.getId().toString(), payload);
+        kafkaTemplate.send(TOPIC, property.getId().toString(), payload);
     }
 }

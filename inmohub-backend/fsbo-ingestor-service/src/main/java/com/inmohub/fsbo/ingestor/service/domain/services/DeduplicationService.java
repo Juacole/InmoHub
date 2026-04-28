@@ -1,6 +1,6 @@
 package com.inmohub.fsbo.ingestor.service.domain.services;
 
-import com.inmohub.fsbo.ingestor.service.domain.models.FsboRecord;
+import com.inmohub.fsbo.ingestor.service.domain.models.PropertyRecord;
 import com.inmohub.fsbo.ingestor.service.domain.ports.IFsboRepository;
 
 import java.util.HashSet;
@@ -15,19 +15,44 @@ public class DeduplicationService {
         this.repository = repository;
     }
 
-    public void deduplicate(List<FsboRecord> records) {
-        Set<String> seenEmails = new HashSet<>();
+    public void processPotentiallyDuplicated(List<PropertyRecord> properties) {
+        if (properties == null || properties.isEmpty()) return;
 
-        for (FsboRecord record : records) {
-            if (seenEmails.contains(record.getOwnerEmail().value())) {
-                record.markAsDuplicated("Duplicado en el mismo archivo CSV.");
-            } else {
-                seenEmails.add(record.getOwnerEmail().value());
+        Set<String> propertyKeysInCurrentBatch = new HashSet<>();
 
-                if (repository.existsByEmailOrPhone(record.getOwnerEmail().value(), record.getOwnerPhone())) {
-                    record.markAsDuplicated("Email o teléfono ya existe en el sistema.");
-                }
+        for (PropertyRecord property : properties) {
+            if (!property.canBeProcessed()) continue;
+
+            String propertyKey = generatePropertyKey(property);
+
+            if (isDuplicatedInCurrentBatch(propertyKey, propertyKeysInCurrentBatch)) {
+                property.markAsError("Este inmueble ya aparece en el archivo de carga.");
+                continue;
             }
+
+            if (existsInSystem(property)) {
+                property.markAsError("Este inmueble ya se encuentra registrado en el sistema.");
+                continue;
+            }
+
+            propertyKeysInCurrentBatch.add(propertyKey);
         }
+    }
+
+    private String generatePropertyKey(PropertyRecord property) {
+        return (property.getAddress() + "|" + property.getCity())
+                .toLowerCase()
+                .replaceAll("\\s+", "");
+    }
+
+    private boolean isDuplicatedInCurrentBatch(String key, Set<String> seenKeys) {
+        return !seenKeys.add(key);
+    }
+
+    private boolean existsInSystem(PropertyRecord record) {
+        return repository.existsByAddressAndCity(
+                record.getAddress(),
+                record.getCity()
+        );
     }
 }

@@ -4,7 +4,8 @@ import com.inmohub.fsbo.ingestor.service.domain.abstractions.Result;
 import com.inmohub.fsbo.ingestor.service.domain.models.FsboBatch;
 
 import java.io.InputStream;
+import java.util.UUID;
 
 public interface ICsvParser {
-    Result<FsboBatch, String> parse(InputStream fileStream);
+    Result<FsboBatch, String> parse(InputStream fileStream, UUID ownerId);
 }
