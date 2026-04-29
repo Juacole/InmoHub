@@ -25,7 +25,7 @@ public class KafkaPropertyEventPublisher implements IPropertyEventPublisher {
         for (PropertyRecord record : batch.getValidProperties()) {
             Map<String, Object> propertyNode = new HashMap<>();
 
-            propertyNode.put("ownerId", batch.getOwnerId().toString());
+            propertyNode.put("ownerId", batch.getOwnerDetails().ownerId());
             propertyNode.put("title", record.getTitle());
             propertyNode.put("description", record.getDescription());
             propertyNode.put("price", record.getPrice());
@@ -51,9 +51,9 @@ public class KafkaPropertyEventPublisher implements IPropertyEventPublisher {
         }
 
         Map<String, Object> bulkEvent = new HashMap<>();
-        bulkEvent.put("ownerId", batch.getOwnerId().toString());
+        bulkEvent.put("ownerId", batch.getOwnerDetails().toString());
         bulkEvent.put("properties", propertiesPayload);
 
-        kafkaTemplate.send(TOPIC_PROPERTIES, batch.getOwnerId().toString(), bulkEvent);
+        kafkaTemplate.send(TOPIC_PROPERTIES, batch.getOwnerDetails().toString(), bulkEvent);
     }
 }

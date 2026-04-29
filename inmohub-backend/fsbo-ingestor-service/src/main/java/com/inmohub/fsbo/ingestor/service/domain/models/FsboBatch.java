@@ -6,12 +6,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class FsboBatch {
-    private final UUID ownerId;
+    private final OwnerDetails ownerDetails;
     private final LocalDateTime uploadedAt;
     private final List<PropertyRecord> properties;
 
-    private FsboBatch(UUID id, LocalDateTime uploadedAt, List<PropertyRecord> properties) {
-        this.ownerId = Objects.requireNonNull(id, "El ID del batch es obligatorio.");
+    private FsboBatch(OwnerDetails ownerDetails, LocalDateTime uploadedAt, List<PropertyRecord> properties) {
+        this.ownerDetails = Objects.requireNonNull(ownerDetails, "El ID del batch es obligatorio.");
         this.uploadedAt = Objects.requireNonNull(uploadedAt, "La fecha de carga es obligatoria.");
 
         if (properties == null || properties.isEmpty()) {
@@ -20,8 +20,8 @@ public class FsboBatch {
         this.properties = new ArrayList<>(properties);
     }
 
-    public static FsboBatch create(UUID batchId, LocalDateTime uploadedAt, List<PropertyRecord> records) {
-        return new FsboBatch(batchId, uploadedAt, records);
+    public static FsboBatch create(OwnerDetails ownerDetails, LocalDateTime uploadedAt, List<PropertyRecord> records) {
+        return new FsboBatch(ownerDetails, uploadedAt, records);
     }
 
     public List<PropertyRecord> getValidProperties() {
@@ -36,8 +36,8 @@ public class FsboBatch {
         return properties.size();
     }
 
-    public UUID getOwnerId() {
-        return ownerId;
+    public OwnerDetails getOwnerDetails() {
+        return ownerDetails;
     }
 
     public LocalDateTime getUploadedAt() {
