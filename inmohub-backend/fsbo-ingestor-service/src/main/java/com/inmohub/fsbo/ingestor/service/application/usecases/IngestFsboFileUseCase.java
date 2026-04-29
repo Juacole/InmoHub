@@ -46,7 +46,7 @@ public class IngestFsboFileUseCase {
             return Result.error("El ID del propietario es obligatorio.");
         }
 
-        Result<FsboBatch, String> parseResult = csvParser.parse(fileStream, ownerDetails.ownerId());
+        Result<FsboBatch, String> parseResult = csvParser.parse(fileStream, ownerDetails);
         if (!parseResult.isSuccess()) {
             return Result.error("Error leyendo el CSV: " + parseResult.getErrorValue());
         }
