@@ -4,6 +4,7 @@ import com.inmohub.fsbo.ingestor.service.application.dtos.DeduplicationSummary;
 import com.inmohub.fsbo.ingestor.service.application.dtos.FsboResponse;
 import com.inmohub.fsbo.ingestor.service.domain.abstractions.Result;
 import com.inmohub.fsbo.ingestor.service.domain.models.FsboBatch;
+import com.inmohub.fsbo.ingestor.service.domain.models.OwnerDetails;
 import com.inmohub.fsbo.ingestor.service.domain.models.PropertyRecord;
 import com.inmohub.fsbo.ingestor.service.domain.ports.ICsvParser;
 import com.inmohub.fsbo.ingestor.service.domain.ports.IFsboRepository;
@@ -37,15 +38,15 @@ public class IngestFsboFileUseCase {
         this.propertyPublisher = propertyPublisher;
     }
 
-    public Result<FsboResponse, String> execute(InputStream fileStream, UUID ownerId) {
+    public Result<FsboResponse, String> execute(InputStream fileStream, OwnerDetails ownerDetails) {
         if (fileStream == null) {
             return Result.error("El flujo de archivo no puede ser nulo.");
         }
-        if (ownerId == null) {
+        if (ownerDetails == null) {
             return Result.error("El ID del propietario es obligatorio.");
         }
 
-        Result<FsboBatch, String> parseResult = csvParser.parse(fileStream, ownerId);
+        Result<FsboBatch, String> parseResult = csvParser.parse(fileStream, ownerDetails.ownerId());
         if (!parseResult.isSuccess()) {
             return Result.error("Error leyendo el CSV: " + parseResult.getErrorValue());
         }
@@ -69,7 +70,7 @@ public class IngestFsboFileUseCase {
 
         validProperties.forEach(PropertyRecord::markAsProcessed);
 
-        leadPublisher.publishOwnerAsLeadEvent(ownerId);
+        leadPublisher.publishOwnerAsLeadEvent(ownerDetails);
 
         propertyPublisher.publishBulkProperties(batch);
 
