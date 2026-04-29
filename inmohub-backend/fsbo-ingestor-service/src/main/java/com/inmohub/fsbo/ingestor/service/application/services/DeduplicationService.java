@@ -41,13 +41,13 @@ public class DeduplicationService {
         return new DeduplicationSummary(properties.size(), duplicatesFound);
     }
 
-    private String generatePropertyKey(PropertyRecord property) {
+    private static String generatePropertyKey(PropertyRecord property) {
         return (property.getAddress() + "|" + property.getCity())
                 .toLowerCase()
                 .replaceAll("\\s+", "");
     }
 
-    private boolean isDuplicatedInCurrentBatch(String key, Set<String> seenKeys) {
+    private static boolean isDuplicatedInCurrentBatch(String key, Set<String> seenKeys) {
         return !seenKeys.add(key);
     }
 
