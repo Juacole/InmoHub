@@ -1,8 +1,6 @@
 package com.inmohub.lead.service.infrastructure.adapters.out.persitence.entities;
 
-import com.inmohub.lead.service.domain.model.enums.LeadSource;
 import com.inmohub.lead.service.domain.model.enums.LeadStatus;
-import com.inmohub.lead.service.domain.valueobjetcs.Email;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -30,7 +28,7 @@ public class LeadJpaEntity {
     private String name;
 
     @Column(nullable = false)
-    private Email email;
+    private String email;
 
     @Column(nullable = false)
     private String phone;
@@ -39,7 +37,7 @@ public class LeadJpaEntity {
     private String message;
 
     @Enumerated(EnumType.STRING)
-    private LeadSource source;
+    private String source;
 
     @Column(nullable = false)
     private UUID propertyId;
