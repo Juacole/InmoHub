@@ -1,6 +1,5 @@
 package com.inmohub.lead.service.infrastructure.adapters.out.messaging;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inmohub.lead.service.application.dto.CreateLeadRequest;
 import com.inmohub.lead.service.application.usecases.CreateLeadUseCase;
@@ -11,17 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class FsboIngestionConsumer {
 
     private final CreateLeadUseCase createLeadUseCase;
     private final ObjectMapper objectMapper;
-
-    public FsboIngestionConsumer(CreateLeadUseCase createLeadUseCase, ObjectMapper objectMapper) {
-        this.createLeadUseCase = createLeadUseCase;
-        this.objectMapper = objectMapper.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     @KafkaListener(topics = "lead.events", groupId = "lead-service-group")
     public void consumeFsboEvent(String message) {
@@ -38,7 +35,7 @@ public class FsboIngestionConsumer {
                     event.ownerPhone(),
                     "Lead (Propietario) generado automáticamente tras carga masiva FSBO. ID Original: " + event.ownerId(),
                     LeadSource.FSBO,
-                    null // en una carga masiva no hay IDS asignados a las propiedades
+                    UUID.randomUUID()
             );
 
             createLeadUseCase.execute(leadRequest);
