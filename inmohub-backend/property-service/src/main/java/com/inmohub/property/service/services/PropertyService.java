@@ -74,6 +74,7 @@ public class PropertyService {
 
         Property property = propertyMapper.toEntity(dto);
         property.setOwnerId(ownerId);
+        property.setId(UUID.randomUUID());
         property.setStatus(PropertyStatus.AVAILABLE);
 
         if (dto.features() != null) {

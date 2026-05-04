@@ -1,7 +1,6 @@
 package com.inmohub.property.service.models;
 
 import com.inmohub.property.service.models.enums.PropertyStatus;
-import com.inmohub.property.service.models.utils.UseExistingOrGenerateId;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
@@ -28,10 +28,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class) // Activa la auditoría de fechas
-public class Property {
+public class Property implements Persistable<UUID> {
 
     @Id
-    @UseExistingOrGenerateId
     private UUID id;
 
     @NotBlank(message = "El titulo es obligatorio")
@@ -95,5 +94,11 @@ public class Property {
     public void addFeature(PropertyFeature feature) {
         features.add(feature);
         feature.setProperty(this);
+    }
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        return this.createdAt == null;
     }
 }
