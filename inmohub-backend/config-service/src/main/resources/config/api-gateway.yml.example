@@ -20,7 +20,7 @@ spring:
               # "AUTH-SERVICE" y balancea la carga entre ellas si hubiera más de una instancia.
               uri: lb://AUTH-SERVICE
               predicates:
-                # Cualquier petición que empiece por /api/v1/users/ se envía a este microservicio
+                # Cualquier petición que empieza por /api/v1/users/ se envía a este microservicio
                 - Path=/api/v1/users/**
 
             # --- PROPERTY-SERVICE
@@ -28,6 +28,16 @@ spring:
               uri: lb://PROPERTY-SERVICE
               predicates:
                 - Path=/api/v1/properties/**
+
+            - id: fsbo-ingestor-service
+              uri: lb://FSBO-INGESTOR-SERVICE
+              predicates:
+                - Path=/api/v1/fsbo/**
+
+            - id: lead-service
+              uri: lb://LEAD-SERVICE
+              predicates:
+                - Path=/api/v1/leads/**
 
 eureka:
   instance:
@@ -44,7 +54,8 @@ eureka:
 
 jwt:
   secret: "TU_CLAVE_SECRETA_AQUI"
-  expiration: 86400000 # 1 día en milisegundos
+  expiration: 900000 # 15 minutos en milisegundos
+  refresh-expiration: 604800000 # 7 días en milisegundos
 
 # Configuración específica para Docker
 ---

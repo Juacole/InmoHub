@@ -10,25 +10,25 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
       hibernate:
-        ddl-auto: update
+        ddl-auto: create
       show-sql: true
       properties:
         hibernate:
           format_sql: true # Formatea el SQL en logs para mejor legibilidad
   servlet:
-     multipart:
-       enabled: true
-        max-file-size: 10MB
-        max-request-size: 50MB
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
   kafka:
     consumer:
-      bootstrap-servers: broker:29092
-      group-id: property-group
+      bootstrap-servers: localhost:9092
+      group-id: property-group-v2
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       properties:
-        spring.json.trusted.packages: "com.inmohub.property.service.dtos.kafka"
+        spring.json.trusted.packages: "com.inmohub.property.service.messaging.dtos"
 
 eureka:
   instance:
@@ -46,7 +46,7 @@ springdoc:
 
 firebase:
   storage:
-    bucket-name: id-proyecto.appspot.com
+    bucket-name: TU_BUCKET_DE_FIREBASE
     download-url-format: "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media"
 
 # Configuración específica para Docker
@@ -58,6 +58,13 @@ spring:
   datasource:
     # Uso del nombre del servicio property-db definido en docker-compose (DNS interno de Docker)
     url: jdbc:postgresql://property-db:5432/property_db
+  kafka:
+    consumer:
+      bootstrap-servers: broker:29092
+      group-id: property-group-v2
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 eureka:
   client:
