@@ -6,15 +6,16 @@ import com.inmohub.lead.service.application.dto.LeadAssignmentResponse;
 import com.inmohub.lead.service.application.dto.LeadResponse;
 import com.inmohub.lead.service.application.usecases.AssignLeadUseCase;
 import com.inmohub.lead.service.application.usecases.CreateLeadUseCase;
+import com.inmohub.lead.service.application.usecases.GetAllLeadsUseCase;
 import com.inmohub.lead.service.domain.abstractions.Error;
 import com.inmohub.lead.service.domain.abstractions.Result;
+import com.inmohub.lead.service.domain.abstractions.PaginatedResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,7 @@ public class LeadController {
 
     private final CreateLeadUseCase createLeadUseCase;
     private final AssignLeadUseCase assignLeadUseCase;
+    private final GetAllLeadsUseCase getAllLeadsUseCase;
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -71,6 +73,41 @@ public class LeadController {
     })
     public Result<LeadResponse, Error> createLead(@RequestBody CreateLeadRequest request) {
         return createLeadUseCase.execute(request);
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Obtener todos los leads paginados",
+            description = "Devuelve una lista paginada de todos los leads existentes"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Listado obtenido exitosamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = PaginatedResult.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Error interno del servidor",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"status\": 500, \"error\": \"Internal Server Error\", \"message\": \"Ocurrió un error inesperado en el servidor.\"}"
+                            )
+                    )
+            )
+    })
+    public Result<PaginatedResult<LeadResponse>, Error> getAllLeads(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return getAllLeadsUseCase.execute(page, size);
     }
 
     @PostMapping("/{leadId}/assign")

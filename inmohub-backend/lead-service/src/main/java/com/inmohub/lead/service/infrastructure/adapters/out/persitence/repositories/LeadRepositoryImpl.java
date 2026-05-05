@@ -4,10 +4,13 @@ import com.inmohub.lead.service.domain.model.Lead;
 import com.inmohub.lead.service.domain.model.LeadAssignment;
 import com.inmohub.lead.service.domain.model.LeadAuditLog;
 import com.inmohub.lead.service.domain.ports.ILeadRepository;
+import com.inmohub.lead.service.domain.abstractions.PaginatedResult;
 import com.inmohub.lead.service.infrastructure.adapters.out.persitence.mappers.LeadAssignmentMapper;
 import com.inmohub.lead.service.infrastructure.adapters.out.persitence.mappers.LeadEventMapper;
 import com.inmohub.lead.service.infrastructure.adapters.out.persitence.mappers.LeadMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -45,5 +48,18 @@ public class LeadRepositoryImpl implements ILeadRepository {
     @Override
     public void saveAuditLog(LeadAuditLog auditLog) {
         eventRepository.save(eventMapper.toJpaEntity(auditLog));
+    }
+
+    @Override
+    public PaginatedResult<Lead> findAll(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Lead> leadsPage = leadRepository.findAll(pageRequest).map(leadMapper::toDomainEntity);
+
+        return PaginatedResult.of(
+                leadsPage.getContent(),
+                leadsPage.getNumber(),
+                leadsPage.getSize(),
+                leadsPage.getTotalElements()
+        );
     }
 }
