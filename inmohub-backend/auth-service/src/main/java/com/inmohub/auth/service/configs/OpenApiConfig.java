@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.context.annotation.Configuration;
+import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 
 @Configuration
 @OpenAPIDefinition(
@@ -22,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 )
 @SecurityScheme(
         name = "Bearer",
-        type = io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP,
+        type = HTTP,
         scheme = "bearer",
         bearerFormat = "JWT",
         description = "JWT token de acceso. Obtener mediante /login"

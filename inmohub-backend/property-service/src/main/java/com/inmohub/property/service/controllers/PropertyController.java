@@ -5,10 +5,13 @@ import com.inmohub.property.service.dtos.PropertyDto;
 import com.inmohub.property.service.services.PropertyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -31,7 +34,12 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/properties")
 @AllArgsConstructor
-@Tag(name = "Gestión de Propiedades", description = "Endpoints para el ciclo de vida de los inmuebles (CRUD)")
+@Tag(
+        name = "Gestión de Propiedades",
+        description = "Endpoints para el ciclo de vida completo de los inmuebles: creación, consulta, actualización y eliminación. " +
+                "Requiere autenticación JWT para operaciones protegidas."
+)
+@SecurityRequirement(name = "bearerAuth")
 public class PropertyController {
 
     private final PropertyService propertyService;
@@ -40,41 +48,67 @@ public class PropertyController {
     @PreAuthorize("hasAnyRole('ADMIN', 'AGENT', 'OWNER')")
     @Operation(
             summary = "Publicar una nueva propiedad con imágenes",
-            description = "Crea un inmueble vinculando imágenes subidas a Firebase." +
-                    "El owner_id se extrae automáticamente del token de seguridad (X-User-Id)."
+            description = "Crea un inmueble vinculando imágenes subidas a Firebase. " +
+                    "El owner_id se extrae automáticamente del token de seguridad (claim 'sub'). " +
+                    "Permite subir hasta 10 imágenes en formato JPG, JPEG o PNG (máximo 5MB por archivo). " +
+                    "Las imágenes se almacenan en Firebase Storage y se asocian a la propiedad."
     )
     @ApiResponses(
             value = {
                 @ApiResponse(
-                        responseCode = "200",
+                        responseCode = "201",
                         description = "Propiedad creada exitosamente",
                         content = @Content(
                                 mediaType = "application/json",
-                                schema = @Schema(implementation = PropertyDto.class)
+                                schema = @Schema(implementation = PropertyDto.class),
+                                examples = @ExampleObject(
+                                        name = "Propiedad creada",
+                                        value = "{\"id\":\"550e8400-e29b-41d4-a716-446655440000\",\"title\":\"Chalet de lujo\",\"description\":\"Hermosa casa\",\"price\":450000.00,\"areaM2\":250.5,\"address\":\"Calle Mayor 123\",\"city\":\"Madrid\",\"status\":\"AVAILABLE\",\"ownerId\":\"660e8400-e29b-41d4-a716-446655440000\",\"photos\":[],\"features\":[],\"createdAt\":\"2024-01-15T10:30:00\",\"updatedAt\":\"2024-01-15T10:30:00\"}"
+                                )
                         )
                 ),
                 @ApiResponse(
                         responseCode = "400",
-                        description = "Error de validación en los datos de entrada",
+                        description = "Error de validación en los datos de entrada. Verificar formato JSON y campos obligatorios.",
+                        content = @Content(mediaType = "application/json",
+                                examples = @ExampleObject(
+                                        value = "{\"errors\":{\"title\":\"El título es obligatorio\",\"price\":\"El precio debe ser positivo\"}}"
+                                ))
+                ),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "No autenticado. Token JWT no proporcionado o inválido.",
                         content = @Content
                 ),
                 @ApiResponse(
                         responseCode = "403",
-                        description = "No autorizado para realizar esta operación",
+                        description = "No autorizado. El usuario no tiene el rol requerido (ADMIN, AGENT u OWNER).",
                         content = @Content
                 ),
                 @ApiResponse(
                         responseCode = "409",
-                        description = "Conflicto: El propietario no existe o no está activo",
+                        description = "Conflicto: El propietario no existe o no está activo en el sistema.",
+                        content = @Content(mediaType = "application/json",
+                                examples = @ExampleObject(
+                                        value = "{\"error\":\"El propietario no existe o no está activo\"}"
+                                ))
+                ),
+                @ApiResponse(
+                        responseCode = "500",
+                        description = "Error interno del servidor al procesar la solicitud.",
                         content = @Content
                 )
             }
     )
     public ResponseEntity<PropertyDto> create(
-            @Parameter(description = "Metadatos de la propiedad en formato JSON", required = true)
+            @Parameter(
+                    description = "Metadatos de la propiedad en formato JSON. " +
+                            "Ejemplo: {\"title\":\"Casa\",\"description\":\"...\",\"price\":250000,\"areaM2\":120,\"address\":\"Calle X\",\"city\":\"Madrid\",\"state\":\"Madrid\",\"country\":\"España\"}",
+                    required = true,
+                    schema = @Schema(example = "{\"title\":\"Chalet de lujo\",\"description\":\"Hermosa casa\",\"price\":450000.00,\"areaM2\":250.5,\"address\":\"Calle Mayor 123\",\"city\":\"Madrid\",\"state\":\"Comunidad de Madrid\",\"country\":\"España\",\"features\":[{\"featureName\":\"Habitaciones\",\"featureValue\":\"4\"}]}")
+            )
             @RequestPart("property") @Valid PropertyCreateDto propertyCreateDto,
-
-            @Parameter(description = "Listado de archivos de imagen (jpg, png).")
+            @Parameter(description = "Archivos de imagen opcionales ( formatos permitidos: JPG, JPEG, PNG). Máximo 5MB por archivo.")
             @RequestPart(value = "photos", required = false) List<MultipartFile> photos
     ) throws IOException {
 
@@ -90,11 +124,26 @@ public class PropertyController {
     @GetMapping("/all")
     @Operation(
             summary = "Listar todas las propiedades",
-            description = "Recupera el listado completo de inmuebles disponibles en el sistema."
+            description = "Recupera el listado completo de inmuebles disponibles en el sistema. " +
+                    "Retorna un array vacío si no existen propiedades. " +
+                    "Este endpoint es público (no requiere autenticación)."
     )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Listado recuperado correctamente"
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Listado recuperado correctamente",
+                        content = @Content(
+                                mediaType = "application/json",
+                                array = @ArraySchema(schema = @Schema(implementation = PropertyDto.class))
+                        )
+                ),
+                @ApiResponse(
+                        responseCode = "500",
+                        description = "Error interno del servidor al recuperar las propiedades.",
+                        content = @Content
+                )
+            }
     )
     public ResponseEntity<List<PropertyDto>> getAll() {
         return ResponseEntity.ok(propertyService.getAllProperties());
@@ -104,26 +153,47 @@ public class PropertyController {
     @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     @Operation(
             summary = "Buscar propiedad por ID",
-            description = "Obtiene los detalles de un inmueble específico."
+            description = "Obtiene los detalles completos de un inmueble específico mediante su identificador único (UUID). " +
+                    "Solo accesible para usuarios con rol ADMIN o AGENT."
     )
     @ApiResponses(
             value = {
                 @ApiResponse(
                         responseCode = "200",
-                        description = "Propiedad encontrada",
+                        description = "Propiedad encontrada correctamente",
                         content = @Content(
                                 mediaType = "application/json",
                                 schema = @Schema(implementation = PropertyDto.class)
                         )
                 ),
                 @ApiResponse(
+                        responseCode = "401",
+                        description = "No autenticado. Token JWT no proporcionado o inválido.",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "No autorizado. Se requiere rol ADMIN o AGENT.",
+                        content = @Content
+                ),
+                @ApiResponse(
                         responseCode = "404",
-                        description = "Propiedad no encontrada",
+                        description = "No se encontró ninguna propiedad con el ID especificado.",
+                        content = @Content(mediaType = "application/json",
+                                examples = @ExampleObject(
+                                        value = "{\"error\":\"Propiedad no encontrada con ID: 550e8400-e29b-41d4-a716-446655440000\"}"
+                                ))
+                ),
+                @ApiResponse(
+                        responseCode = "500",
+                        description = "Error interno del servidor.",
                         content = @Content
                 )
             }
     )
-    public ResponseEntity<PropertyDto> getById(@PathVariable(name = "id") UUID id) {
+    public ResponseEntity<PropertyDto> getById(
+            @Parameter(description = "Identificador único (UUID) de la propiedad", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable(name = "id") UUID id) {
         PropertyDto p = propertyService.getPropertyById(id);
 
         if(p != null) return ResponseEntity.ok(p);
@@ -137,13 +207,40 @@ public class PropertyController {
     @PreAuthorize("hasAnyRole('ADMIN', 'AGENT', 'OWNER')")
     @Operation(
             summary = "Listar propiedades de un propietario",
-            description = "Devuelve todos los inmuebles asociados a un usuario específico."
+            description = "Devuelve todos los inmuebles asociados a un usuario específico (propietario). " +
+                    "Retorna un array vacío si el usuario no tiene propiedades registradas. " +
+                    "Los OWNER solo pueden ver sus propias propiedades."
     )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Listado recuperado (puede estar vacío)"
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Listado de propiedades del propietario recuperado correctamente",
+                        content = @Content(
+                                mediaType = "application/json",
+                                array = @ArraySchema(schema = @Schema(implementation = PropertyDto.class))
+                        )
+                ),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "No autenticado. Token JWT no proporcionado o inválido.",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "No autorizado. Se requiere rol ADMIN, AGENT u OWNER.",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "500",
+                        description = "Error interno del servidor.",
+                        content = @Content
+                )
+            }
     )
-    public ResponseEntity<List<PropertyDto>> getByOwnerId(@PathVariable(name = "id") UUID id) {
+    public ResponseEntity<List<PropertyDto>> getByOwnerId(
+            @Parameter(description = "Identificador único (UUID) del propietario", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable(name = "id") UUID id) {
         return ResponseEntity.ok(propertyService.findByOwnerId(id));
     }
 
@@ -151,21 +248,48 @@ public class PropertyController {
     @PreAuthorize("hasAnyRole('ADMIN', 'AGENT', 'OWNER')")
     @Operation(
             summary = "Eliminar propiedad",
-            description = "Elimina físicamente un inmueble de la base de datos."
+            description = "Elimina físicamente un inmueble de la base de datos. " +
+                    "NOTA: Solo el propietario (OWNER) con el mismo ownerId, ADMIN o AGENT pueden eliminar propiedades. " +
+                    "Esta operación es irreversible."
     )
     @ApiResponses(
             value = {
                 @ApiResponse(
                         responseCode = "200",
-                        description = "Propiedad eliminada correctamente"
+                        description = "Propiedad eliminada correctamente",
+                        content = @Content(mediaType = "application/json",
+                                examples = @ExampleObject(
+                                        value = "{\"message\":\"Propiedad eliminada exitosamente\"}"
+                                ))
+                ),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "No autenticado. Token JWT no proporcionado o inválido.",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "No autorizado. El usuario no tiene permisos para eliminar esta propiedad.",
+                        content = @Content
                 ),
                 @ApiResponse(
                         responseCode = "404",
-                        description = "No se encontró la propiedad a eliminar"
+                        description = "No se encontró ninguna propiedad con el ID especificado para eliminar.",
+                        content = @Content(mediaType = "application/json",
+                                examples = @ExampleObject(
+                                        value = "{\"error\":\"Propiedad no encontrada con ID: 550e8400-e29b-41d4-a716-446655440000\"}"
+                                ))
+                ),
+                @ApiResponse(
+                        responseCode = "500",
+                        description = "Error interno del servidor.",
+                        content = @Content
                 )
             }
     )
-    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteById(
+            @Parameter(description = "Identificador único (UUID) de la propiedad a eliminar", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID id) {
         boolean deleted = propertyService.deleteById(id);
 
         if (deleted) {
