@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -76,5 +77,15 @@ public class ResultMappingAdvice implements ResponseBodyAdvice<Object> {
         if (error instanceof ForbiddenAgentLeadsError) return HttpStatus.FORBIDDEN;
 
         return HttpStatus.BAD_REQUEST;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleAccessDeniedException(AccessDeniedException ex) {
+        return Map.of(
+                "status", 403,
+                "error", "Forbidden",
+                "message", "Acceso denegado. No tienes permisos para visualizar estos leads."
+        );
     }
 }
