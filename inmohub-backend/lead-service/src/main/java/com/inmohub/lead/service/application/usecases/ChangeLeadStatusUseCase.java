@@ -27,7 +27,7 @@ public class ChangeLeadStatusUseCase {
             return Result.error(new LeadNotFound("Lead no encontrado."));
         }
 
-        if ("AGENT".equals(requesterRole) || "ADMIN".equals(requesterRole)) {
+        if ("ROLE_AGENT".equals(requesterRole) || "ROLE_ADMIN".equals(requesterRole)) {
             List<LeadAssignment> assignments = leadRepository.findAssignmentsByLeadId(leadId);
             boolean isAssigned = assignments.stream()
                     .anyMatch(a -> a.getAgentId().equals(requesterId));
