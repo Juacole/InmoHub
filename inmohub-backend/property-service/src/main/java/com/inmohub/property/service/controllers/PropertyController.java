@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,19 +36,40 @@ public class PropertyController {
 
     private final PropertyService propertyService;
 
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT', 'OWNER')")
     @Operation(
             summary = "Publicar una nueva propiedad con imágenes",
             description = "Crea un inmueble vinculando imágenes subidas a Firebase." +
                     "El owner_id se extrae automáticamente del token de seguridad (X-User-Id)."
     )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Propiedad creada exitosamente",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PropertyDto.class))),
-            @ApiResponse(responseCode = "400", description = "Error de validación en los datos de entrada", content = @Content),
-            @ApiResponse(responseCode = "403", description = "No autorizado para realizar esta operación", content = @Content),
-            @ApiResponse(responseCode = "409", description = "Conflicto: El propietario no existe o no está activo", content = @Content)
-    })
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Propiedad creada exitosamente",
+                        content = @Content(
+                                mediaType = "application/json",
+                                schema = @Schema(implementation = PropertyDto.class)
+                        )
+                ),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Error de validación en los datos de entrada",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "No autorizado para realizar esta operación",
+                        content = @Content
+                ),
+                @ApiResponse(
+                        responseCode = "409",
+                        description = "Conflicto: El propietario no existe o no está activo",
+                        content = @Content
+                )
+            }
+    )
     public ResponseEntity<PropertyDto> create(
             @Parameter(description = "Metadatos de la propiedad en formato JSON", required = true)
             @RequestPart("property") @Valid PropertyCreateDto propertyCreateDto,
@@ -65,20 +87,42 @@ public class PropertyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Listar todas las propiedades", description = "Recupera el listado completo de inmuebles disponibles en el sistema.")
-    @ApiResponse(responseCode = "200", description = "Listado recuperado correctamente")
     @GetMapping("/all")
+    @Operation(
+            summary = "Listar todas las propiedades",
+            description = "Recupera el listado completo de inmuebles disponibles en el sistema."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Listado recuperado correctamente"
+    )
     public ResponseEntity<List<PropertyDto>> getAll() {
         return ResponseEntity.ok(propertyService.getAllProperties());
     }
 
-    @Operation(summary = "Buscar propiedad por ID", description = "Obtiene los detalles de un inmueble específico.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Propiedad encontrada",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PropertyDto.class))),
-            @ApiResponse(responseCode = "404", description = "Propiedad no encontrada", content = @Content)
-    })
     @GetMapping("/search-by-id/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
+    @Operation(
+            summary = "Buscar propiedad por ID",
+            description = "Obtiene los detalles de un inmueble específico."
+    )
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Propiedad encontrada",
+                        content = @Content(
+                                mediaType = "application/json",
+                                schema = @Schema(implementation = PropertyDto.class)
+                        )
+                ),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Propiedad no encontrada",
+                        content = @Content
+                )
+            }
+    )
     public ResponseEntity<PropertyDto> getById(@PathVariable(name = "id") UUID id) {
         PropertyDto p = propertyService.getPropertyById(id);
 
@@ -89,19 +133,38 @@ public class PropertyController {
                 .build();
     }
 
-    @Operation(summary = "Listar propiedades de un propietario", description = "Devuelve todos los inmuebles asociados a un usuario específico.")
-    @ApiResponse(responseCode = "200", description = "Listado recuperado (puede estar vacío)")
     @GetMapping("/search-by-owner-id/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT', 'OWNER')")
+    @Operation(
+            summary = "Listar propiedades de un propietario",
+            description = "Devuelve todos los inmuebles asociados a un usuario específico."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Listado recuperado (puede estar vacío)"
+    )
     public ResponseEntity<List<PropertyDto>> getByOwnerId(@PathVariable(name = "id") UUID id) {
         return ResponseEntity.ok(propertyService.findByOwnerId(id));
     }
 
-    @Operation(summary = "Eliminar propiedad", description = "Elimina físicamente un inmueble de la base de datos.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Propiedad eliminada correctamente"),
-            @ApiResponse(responseCode = "404", description = "No se encontró la propiedad a eliminar")
-    })
     @DeleteMapping("/delete-by-id/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT', 'OWNER')")
+    @Operation(
+            summary = "Eliminar propiedad",
+            description = "Elimina físicamente un inmueble de la base de datos."
+    )
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Propiedad eliminada correctamente"
+                ),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "No se encontró la propiedad a eliminar"
+                )
+            }
+    )
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         boolean deleted = propertyService.deleteById(id);
 
