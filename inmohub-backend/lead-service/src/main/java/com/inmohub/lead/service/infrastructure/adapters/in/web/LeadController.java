@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +41,7 @@ public class LeadController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     @Operation(
             summary = "Crear un nuevo Lead",
             description = "Registra un interesado en una propiedad"
@@ -82,6 +84,7 @@ public class LeadController {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     @Operation(
             summary = "Obtener todos los leads paginados",
             description = "Devuelve una lista paginada de todos los leads existentes"
@@ -117,6 +120,7 @@ public class LeadController {
 
     @PostMapping("/{leadId}/assign")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     @Operation(
             summary = "Asignar un Lead a un Agente",
             description = "Cambia el estado del Lead a CONTACTED, registra la asignación y genera un log de auditoría."
@@ -175,6 +179,7 @@ public class LeadController {
 
     @GetMapping("/property/{propertyId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     @Operation(
             summary = "Obtener leads por ID de propiedad",
             description = "Devuelve una lista paginada de todos los interesados en una propiedad específica."
@@ -221,6 +226,7 @@ public class LeadController {
 
     @GetMapping("/agent/{agentId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('AGENT') and principal == #agentId.toString())")
     @Operation(
             summary = "Obtener leads por ID de agente",
             description = "Devuelve una lista paginada de los leads asignados a un agente específico."
@@ -262,25 +268,12 @@ public class LeadController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        String currentUserIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse(null);
-
-        if (!"ROLE_AGENT".equals(currentUserRole) && !"ROLE_ADMIN".equals(currentUserRole)) {
-            return Result.error(new AccessDeniedError("Acceso denegado. Permisos insuficientes."));
-        }
-
-        if ("ROLE_AGENT".equals(currentUserRole) && currentUserIdStr != null && !agentId.toString().equals(currentUserIdStr)) {
-            return Result.error(new ForbiddenAgentLeadsError("No puedes ver los leads de otro agente."));
-        }
-
         return getLeadsByAgentIdUseCase.execute(agentId, page, size);
     }
 
     @PatchMapping("/{leadId}/status")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     @Operation(
             summary = "Cambiar el estado de un lead",
             description = "Actualiza el estado de un lead. Requiere ser ADMIN o el AGENT asignado."
