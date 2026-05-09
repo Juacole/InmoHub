@@ -273,7 +273,7 @@ public class PropertyController {
     )
     public ResponseEntity<Page<PropertySummaryDto>> getPropertiesSummary(
             @Parameter(
-                    description = "Parámetros de paginación: page (número de página, 0-based), size (tamaño de página), sort (ordenamiento)"
+                    description = "Parámetros de paginación: page (número de página), size (tamaño de página), sort (ordenamiento)"
             )
             Pageable pageable
     ) {
@@ -283,7 +283,7 @@ public class PropertyController {
     @GetMapping("/search")
     @Operation(
             summary = "Búsqueda dinámica de propiedades con filtros",
-            description = "Permite filtrar propiedades por ciudad (case-insensitive), rango de precios (minPrice/maxPrice) y estado. " +
+            description = "Permite filtrar propiedades por ciudad, rango de precios y estado. " +
                     "Todos los filtros son opcionales y se combinan con AND. La paginación es obligatoria."
     )
     @ApiResponses(
@@ -304,7 +304,7 @@ public class PropertyController {
             }
     )
     public ResponseEntity<Page<PropertySummaryDto>> searchProperties(
-            @Parameter(description = "Ciudad para filtrar (búsqueda case-insensitive, parcial)", example = "Madrid")
+            @Parameter(description = "Ciudad para filtrar", example = "Madrid")
             @RequestParam(required = false) String city,
 
             @Parameter(description = "Precio mínimo", example = "100000.00")
@@ -328,7 +328,7 @@ public class PropertyController {
     @Operation(
             summary = "Eliminar propiedad",
             description = "Elimina físicamente un inmueble de la base de datos. " +
-                    "NOTA: Solo el propietario (OWNER) con el mismo ownerId, ADMIN o AGENT pueden eliminar propiedades. " +
+                    "NOTA: Solo el propietario con el mismo ownerId, ADMIN o AGENT pueden eliminar propiedades. " +
                     "Esta operación es irreversible."
     )
     @ApiResponses(
