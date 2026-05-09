@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PropertyEventConsumer {
+public class KafkaPropertyEventConsumer {
 
     private final PropertyService propertyService;
     private final ObjectMapper objectMapper;
