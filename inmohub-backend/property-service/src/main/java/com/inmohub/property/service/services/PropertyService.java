@@ -9,6 +9,7 @@ import com.inmohub.property.service.exceptions.ResourceNotFoundException;
 import com.inmohub.property.service.exceptions.UserNotActiveException;
 import com.inmohub.property.service.mappers.IPropertyMapper;
 import com.inmohub.property.service.dtos.PropertySearchCriteria;
+import com.inmohub.property.service.messaging.KafkaLeadEventPublisher;
 import com.inmohub.property.service.messaging.dtos.BulkPropertyEventDto;
 import com.inmohub.property.service.specifications.PropertySpecifications;
 import com.inmohub.property.service.models.Property;
@@ -44,8 +45,9 @@ import java.util.UUID;
 public class PropertyService {
     private final IPropertyRepository propertyRepository;
     private final IPropertyMapper propertyMapper;
-    private final AuthClient client; // Cliente Feign para comunicación síncrona con Auth-Service
+    private final AuthClient client;
     private final FirebaseStorageService firebaseService;
+    private final KafkaLeadEventPublisher kafkaLeadEventPublisher;
 
     /**
      * Orquesta la creación y persistencia de un nuevo inmueble, integrando validación delegada,
@@ -75,7 +77,7 @@ public class PropertyService {
      */
     @Transactional
     public PropertyDto createProperty(PropertyCreateDto dto, List<MultipartFile> photos, UUID ownerId) throws IOException {
-        validateOwnerStatus(ownerId);
+        UserResponseDto owner = validateOwnerStatus(ownerId);
 
         Property property = propertyMapper.toEntity(dto);
         property.setOwnerId(ownerId);
@@ -96,7 +98,7 @@ public class PropertyService {
                 String url = firebaseService.uploadPhoto(photos.get(i));
                 PropertyPhoto photo = new PropertyPhoto();
                 photo.setPhotoUrl(url);
-                photo.setIsPrimary(i == 0); // La primera foto se marca como principal por defecto
+                photo.setIsPrimary(i == 0);
                 property.addPhoto(photo);
             }
         }
@@ -104,15 +106,24 @@ public class PropertyService {
         PropertyDto savedProperty = propertyMapper.toDto(propertyRepository.save(property));
         log.info("Propiedad creada con éxito: ID {}", savedProperty.id());
 
+        if (owner != null && "OWNER".equalsIgnoreCase(owner.role())) {
+            try {
+                kafkaLeadEventPublisher.publishIndividualPropertyLead(savedProperty.id(), owner);
+            } catch (Exception e) {
+                log.error("Error al publicar evento de lead para propiedad {}: {}", savedProperty.id(), e.getMessage());
+            }
+        }
+
         return savedProperty;
     }
 
-    private void validateOwnerStatus(UUID ownerId) {
+    private UserResponseDto validateOwnerStatus(UUID ownerId) {
         try {
             UserResponseDto user = client.getUserById(ownerId);
             if (!"ACTIVE".equalsIgnoreCase(user.status())) {
                 throw new UserNotActiveException("El usuario debe estar activo para publicar.");
             }
+            return user;
         } catch (FeignException.NotFound e) {
             throw new ResourceNotFoundException("El propietario no existe en Auth-Service.");
         }
