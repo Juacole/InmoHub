@@ -1,5 +1,6 @@
 package com.inmohub.property.service.dtos;
 
+import java.util.Set;
 import java.util.UUID;
 
 public record UserResponseDto(
@@ -7,7 +8,7 @@ public record UserResponseDto(
         String email,
         String name,
         String phone,
-        String role,
+        Set<String> roles,
         String status
 ) {
 }

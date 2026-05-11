@@ -106,12 +106,19 @@ public class PropertyService {
         PropertyDto savedProperty = propertyMapper.toDto(propertyRepository.save(property));
         log.info("Propiedad creada con éxito: ID {}", savedProperty.id());
 
-        if (owner != null && "OWNER".equalsIgnoreCase(owner.role())) {
+
+        if (
+                owner != null && owner.roles() != null &&
+                owner.roles().stream()
+                        .anyMatch(r -> r.equalsIgnoreCase("OWNER"))
+        ) {
             try {
                 kafkaLeadEventPublisher.publishIndividualPropertyLead(savedProperty.id(), owner);
             } catch (Exception e) {
                 log.error("Error al publicar evento de lead para propiedad {}: {}", savedProperty.id(), e.getMessage());
             }
+        } else {
+            log.warn("El usuario {} no tiene el rol OWNER. Roles detectados: {}", owner.id(), owner.roles());
         }
 
         return savedProperty;
