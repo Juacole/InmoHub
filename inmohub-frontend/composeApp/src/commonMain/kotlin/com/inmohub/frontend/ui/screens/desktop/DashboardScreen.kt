@@ -19,10 +19,10 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.inmohub.frontend.data.model.Property
 import com.inmohub.frontend.data.repository.PropertyRepository
-import com.inmohub.frontend.data.repository.UserRepository
-import com.inmohub.frontend.data.repository.UserSummary
+import com.inmohub.frontend.features.auth.data.UserRepository
+import com.inmohub.frontend.features.auth.data.UserSummary
 import com.inmohub.frontend.ui.components.PropertyCard
-import com.inmohub.frontend.ui.screens.login.LoginScreen
+import com.inmohub.frontend.features.auth.presentation.LoginScreen
 import com.inmohub.frontend.core.themes.NavyBluePrimary
 import com.inmohub.frontend.core.themes.TileOrangeSecondary
 

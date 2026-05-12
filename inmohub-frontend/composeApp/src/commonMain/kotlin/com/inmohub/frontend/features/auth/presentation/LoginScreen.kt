@@ -1,11 +1,24 @@
-package com.inmohub.frontend.ui.screens.login
+package com.inmohub.frontend.features.auth.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,14 +28,14 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.inmohub.frontend.data.model.UserSession
-import com.inmohub.frontend.data.repository.AuthRepository
-import com.inmohub.frontend.core.ui.InmoButton
-import com.inmohub.frontend.core.ui.InmoInput
-import com.inmohub.frontend.ui.screens.desktop.DashboardScreen
-import com.inmohub.frontend.ui.screens.mobile.PropertiesListScreen
 import com.inmohub.frontend.core.themes.NavyBluePrimary
 import com.inmohub.frontend.core.themes.TextLightGray
+import com.inmohub.frontend.core.ui.InmoButton
+import com.inmohub.frontend.core.ui.InmoInput
+import com.inmohub.frontend.features.auth.data.AuthRepository
+import com.inmohub.frontend.features.auth.dtos.summary.UserSession
+import com.inmohub.frontend.ui.screens.desktop.DashboardScreen
+import com.inmohub.frontend.ui.screens.mobile.PropertiesListScreen
 import kotlinx.coroutines.launch
 
 class LoginScreen : Screen {

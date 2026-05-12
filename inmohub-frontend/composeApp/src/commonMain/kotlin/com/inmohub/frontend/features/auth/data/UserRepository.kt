@@ -1,18 +1,9 @@
-package com.inmohub.frontend.data.repository
+package com.inmohub.frontend.features.auth.data
 
 import com.inmohub.frontend.core.network.NetworkClient
+import com.inmohub.frontend.features.auth.dtos.summary.UserSummary
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class UserSummary(
-    val id: String,
-    val username: String,
-    val email: String,
-    val role: String,
-    val phone: String
-)
 
 object UserRepository {
     suspend fun getUsersByRole(role: String): List<UserSummary> {

@@ -4,7 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
-import com.inmohub.frontend.ui.screens.login.LoginScreen
+import com.inmohub.frontend.features.auth.presentation.LoginScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable

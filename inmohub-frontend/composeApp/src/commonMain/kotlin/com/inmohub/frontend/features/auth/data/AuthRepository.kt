@@ -1,55 +1,14 @@
-package com.inmohub.frontend.data.repository
+package com.inmohub.frontend.features.auth.data
 
 import com.inmohub.frontend.core.network.NetworkClient
-import com.inmohub.frontend.data.model.User
+import com.inmohub.frontend.features.auth.dtos.login.LoginRequest
+import com.inmohub.frontend.features.auth.dtos.login.LoginResponse
+import com.inmohub.frontend.features.auth.dtos.register.RegisterRequest
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class RegisterRequest(
-    val username: String,
-    val email: String,
-    val password: String,
-    val firstName: String,
-    val lastName: String,
-    val phone: String,
-    val role: String
-)
-
-@Serializable
-data class LoginResponse(
-    val token: String? = null,
-    val id: String,
-    val username: String,
-    val email: String,
-    val firstName: String,
-    val lastName: String,
-    val role: String,
-    val phone: String
-) {
-    fun toUser(): User {
-        return User(
-            id = this.id,
-            username = this.username,
-            email = this.email,
-            firstName = this.firstName,
-            lastName = this.lastName,
-            role = this.role,
-            phone = this.phone,
-            status = "ACTIVE"
-        )
-    }
-}
-
-@Serializable
-data class LoginRequest(
-    val email: String,
-    val password: String
-)
 
 object AuthRepository {
     suspend fun register(request: RegisterRequest): Boolean {

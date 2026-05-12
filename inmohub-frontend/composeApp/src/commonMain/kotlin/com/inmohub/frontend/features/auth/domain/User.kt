@@ -1,4 +1,4 @@
-package com.inmohub.frontend.data.model
+package com.inmohub.frontend.features.auth.domain
 
 import kotlinx.serialization.Serializable
 
@@ -13,11 +13,4 @@ data class User(
     val phone: String,
     val token: String? = null,
     val status: String
-)
-
-data class UserSession(
-    val id: String,
-    val username: String,
-    val role: String,
-    val token: String
 )
