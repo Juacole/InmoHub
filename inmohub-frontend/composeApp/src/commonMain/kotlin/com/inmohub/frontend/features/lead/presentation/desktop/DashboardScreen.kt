@@ -1,13 +1,38 @@
-package com.inmohub.frontend.ui.screens.desktop
+package com.inmohub.frontend.features.lead.presentation.desktop
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,14 +42,14 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.inmohub.frontend.core.themes.NavyBluePrimary
+import com.inmohub.frontend.core.themes.TileOrangeSecondary
 import com.inmohub.frontend.data.model.Property
 import com.inmohub.frontend.data.repository.PropertyRepository
 import com.inmohub.frontend.features.auth.data.UserRepository
-import com.inmohub.frontend.features.auth.data.UserSummary
-import com.inmohub.frontend.ui.components.PropertyCard
+import com.inmohub.frontend.features.auth.dtos.summary.UserSummary
 import com.inmohub.frontend.features.auth.presentation.LoginScreen
-import com.inmohub.frontend.core.themes.NavyBluePrimary
-import com.inmohub.frontend.core.themes.TileOrangeSecondary
+import com.inmohub.frontend.ui.components.PropertyCard
 
 class DashboardScreen(val agentUsername: String) : Screen {
 
@@ -32,7 +57,6 @@ class DashboardScreen(val agentUsername: String) : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val scope = rememberCoroutineScope()
 
         var selectedTabIndex by remember { mutableStateOf(0) }
         val tabs = listOf("Clientes", "Propietarios", "Propiedades")
@@ -56,12 +80,20 @@ class DashboardScreen(val agentUsername: String) : Screen {
                         title = {
                             Column {
                                 Text("Panel de Agente", fontWeight = FontWeight.Bold, color = NavyBluePrimary)
-                                Text("Bienvenido, $agentUsername", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                Text(
+                                    "Bienvenido, $agentUsername",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Gray
+                                )
                             }
                         },
                         actions = {
                             TextButton(onClick = { navigator.replaceAll(LoginScreen()) }) {
-                                Text("Cerrar Sesión", color = TileOrangeSecondary, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Cerrar Sesión",
+                                    color = TileOrangeSecondary,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     )
@@ -118,7 +150,13 @@ class DashboardScreen(val agentUsername: String) : Screen {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = NavyBluePrimary, modifier = Modifier.padding(bottom = 8.dp))
+                Text(
+                    title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NavyBluePrimary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
             }
             items(users) { user ->
                 Card(
@@ -135,10 +173,17 @@ class DashboardScreen(val agentUsername: String) : Screen {
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(cardColor, shape = RoundedCornerShape(20.dp)),
+                                .background(
+                                    cardColor,
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(user.username.take(1).uppercase(), fontWeight = FontWeight.Bold, color = NavyBluePrimary)
+                            Text(
+                                user.username.take(1).uppercase(),
+                                fontWeight = FontWeight.Bold,
+                                color = NavyBluePrimary
+                            )
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
@@ -146,9 +191,7 @@ class DashboardScreen(val agentUsername: String) : Screen {
                         Column {
                             Text(user.username, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             Text(user.email, fontSize = 14.sp, color = Color.Gray)
-                            if (user.phone != null) {
-                                Text("Tel: ${user.phone}", fontSize = 12.sp, color = NavyBluePrimary)
-                            }
+                            Text("Tel: ${user.phone}", fontSize = 12.sp, color = NavyBluePrimary)
                         }
                     }
                 }
@@ -163,7 +206,13 @@ class DashboardScreen(val agentUsername: String) : Screen {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Text("Propiedades en Cartera", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = NavyBluePrimary, modifier = Modifier.padding(bottom = 8.dp))
+                Text(
+                    "Propiedades en Cartera",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NavyBluePrimary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
             }
             items(properties) { property ->
                 PropertyCard(property)

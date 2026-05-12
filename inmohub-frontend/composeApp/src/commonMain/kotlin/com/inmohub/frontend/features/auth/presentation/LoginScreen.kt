@@ -34,7 +34,7 @@ import com.inmohub.frontend.core.ui.InmoButton
 import com.inmohub.frontend.core.ui.InmoInput
 import com.inmohub.frontend.features.auth.data.AuthRepository
 import com.inmohub.frontend.features.auth.dtos.summary.UserSession
-import com.inmohub.frontend.ui.screens.desktop.DashboardScreen
+import com.inmohub.frontend.features.lead.presentation.desktop.DashboardScreen
 import com.inmohub.frontend.ui.screens.mobile.PropertiesListScreen
 import kotlinx.coroutines.launch
 
