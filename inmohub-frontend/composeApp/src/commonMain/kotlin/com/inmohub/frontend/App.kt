@@ -1,7 +1,6 @@
 package com.inmohub.frontend
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -15,16 +14,15 @@ import com.inmohub.frontend.core.themes.inmohubColorScheme
 import com.inmohub.frontend.core.utils.JwtUtils
 import com.inmohub.frontend.features.auth.data.local.SessionManager
 import com.inmohub.frontend.features.auth.data.local.createDataStore
-import com.inmohub.frontend.features.auth.presentation.LoginScreen
 import com.inmohub.frontend.features.lead.presentation.desktop.DashboardScreen
-import com.inmohub.frontend.features.property.presentation.PropertiesListScreen
+import com.inmohub.frontend.features.property.presentation.mobile.HomeScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
 fun App() {
     // Singleton
-    // remmber evita nuevas instancias si interfaz se redibuja
+    // remember evita nuevas instancias si interfaz se redibuja
     val dataStore = remember { createDataStore() }
     val sessionManager = remember { SessionManager(dataStore) }
 
@@ -33,39 +31,37 @@ fun App() {
         NetworkClient.sessionManager = sessionManager
     }
 
-    val hasSession by sessionManager.isSessionActive.collectAsState(initial = true)
+    val hasSession by sessionManager.isSessionActive.collectAsState(initial = false)
+    var initialScreen by remember { mutableStateOf<Screen?>(null) }
+
+    LaunchedEffect(hasSession) {
+        if (!hasSession) {
+            initialScreen = HomeScreen()
+        } else {
+            val token = sessionManager.getAccessToken()
+            if (token == null) {
+                initialScreen = HomeScreen()
+            } else {
+                val role = JwtUtils.getUserRoleFromToken(token)
+                initialScreen = when (role) {
+                    "ADMIN", "AGENT" -> DashboardScreen("Agente")
+                    else -> HomeScreen()
+                }
+            }
+        }
+    }
 
     MaterialTheme(colorScheme = inmohubColorScheme) {
-        if (!hasSession) {
-            Navigator(LoginScreen())
+        if (initialScreen == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = inmohubColorScheme.secondary)
+            }
         } else {
-            var initialScreen by remember { mutableStateOf<Screen?>(null) }
-
-            LaunchedEffect(Unit) {
-                val token = sessionManager.getAccessToken()
-                if (token == null) {
-                    initialScreen = LoginScreen()
-                } else {
-                    val role = JwtUtils.getUserRoleFromToken(token)
-                    initialScreen = when (role) {
-                        "ADMIN", "AGENT" -> DashboardScreen()
-                        "CLIENT", "OWNER" -> PropertiesListScreen()
-                        else -> LoginScreen()
-                    }
-                }
-            }
-
-            if (initialScreen == null) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = inmohubColorScheme.secondary)
-                }
-            } else {
-                // let operador seguro de kotlin, ejecuta lo que le pasen
-                initialScreen?.let { Navigator(it) }
-            }
+            // let operador seguro de kotlin, ejecuta lo que le pasen
+            initialScreen?.let { Navigator(it) }
         }
     }
 }

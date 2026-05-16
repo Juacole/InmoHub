@@ -123,7 +123,7 @@ class LoginScreen : Screen {
                                     "AGENT", "ADMIN" -> {
                                         // TODO: Provisional
                                         val userId = JwtUtils.getUserId(authResponse.accessToken)
-                                        navigator.replaceAll(DashboardScreen(userId ?: "Empleado"))
+                                        navigator.replaceAll(DashboardScreen(userId ?: "Agente"))
                                     }
                                     else -> {
                                         navigator.replaceAll(HomeScreen()) // replaceAll evita guardar estado de forma que el usuario pueda retroceder hasta el login
