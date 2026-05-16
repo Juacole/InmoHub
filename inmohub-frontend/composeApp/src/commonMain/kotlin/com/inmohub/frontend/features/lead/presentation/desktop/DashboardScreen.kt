@@ -44,11 +44,12 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.inmohub.frontend.core.themes.NavyBluePrimary
 import com.inmohub.frontend.core.themes.TileOrangeSecondary
+import com.inmohub.frontend.features.auth.data.AuthRepository
 import com.inmohub.frontend.features.property.domain.Property
 import com.inmohub.frontend.features.property.data.PropertyRepository
-import com.inmohub.frontend.features.auth.data.UserRepository
 import com.inmohub.frontend.features.auth.dtos.UserSummary
 import com.inmohub.frontend.features.auth.presentation.LoginScreen
+import com.inmohub.frontend.features.property.dtos.PropertySummaryDto
 import com.inmohub.frontend.features.property.presentation.shared.PropertyCard
 
 class DashboardScreen(val agentUsername: String) : Screen {
@@ -67,8 +68,8 @@ class DashboardScreen(val agentUsername: String) : Screen {
         var isLoading by remember { mutableStateOf(true) }
 
         LaunchedEffect(Unit) {
-            clients = UserRepository.getUsersByRole("CLIENT")
-            owners = UserRepository.getUsersByRole("OWNER")
+            clients = AuthRepository.getUsersByRole("CLIENT")
+            owners = AuthRepository.getUsersByRole("OWNER")
             properties = PropertyRepository.getAllProperties()
             isLoading = false
         }
@@ -215,7 +216,19 @@ class DashboardScreen(val agentUsername: String) : Screen {
                 )
             }
             items(properties) { property ->
-                PropertyCard(property)
+                property.id?.let { // TODO: Provisional
+                    PropertyCard(
+                        property = PropertySummaryDto(
+                            it,
+                            property.title,
+                            property.price,
+                            property.address,
+                            property.status,
+                            ""
+                        ),
+                        onClick = {}
+                    )
+                }
             }
         }
     }
