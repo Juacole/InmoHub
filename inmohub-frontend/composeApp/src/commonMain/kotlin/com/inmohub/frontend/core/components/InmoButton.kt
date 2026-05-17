@@ -18,15 +18,21 @@ import com.inmohub.frontend.core.themes.TileOrangeSecondary
 fun InmoButton(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier.Companion,
-    isSecondary: Boolean = false
+    modifier: Modifier = Modifier,
+    isSecondary: Boolean = false,
+    enabled: Boolean? = null
 ) {
+    val isEnabled = enabled ?: true
+    
     Button(
         onClick = onClick,
         modifier = modifier.fillMaxWidth().height(50.dp),
+        enabled = isEnabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSecondary) TileOrangeSecondary else NavyBluePrimary,
-            contentColor = Color.Companion.White
+            contentColor = Color.White,
+            disabledContainerColor = if (isSecondary) TileOrangeSecondary.copy(alpha = 0.5f) else NavyBluePrimary.copy(alpha = 0.5f),
+            disabledContentColor = Color.White.copy(alpha = 0.5f)
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
