@@ -39,7 +39,7 @@ public class LeadController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT', 'AGENT')")
     @Operation(
             summary = "Crear un nuevo Lead",
             description = "Registra un interesado en una propiedad"
@@ -118,7 +118,7 @@ public class LeadController {
 
     @PostMapping("/{leadId}/assign")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     @Operation(
             summary = "Asignar un Lead a un Agente",
             description = "Cambia el estado del Lead a CONTACTED, registra la asignación y genera un log de auditoría."
@@ -177,7 +177,7 @@ public class LeadController {
 
     @GetMapping("/property/{propertyId}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     @Operation(
             summary = "Obtener leads por ID de propiedad",
             description = "Devuelve una lista paginada de todos los interesados en una propiedad específica."
